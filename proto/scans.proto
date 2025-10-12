@@ -1,0 +1,148 @@
+syntax = "proto3";
+
+package cloudscan;
+
+option go_package = "github.com/cloudscan/cloudscan-orchestrator/proto";
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/empty.proto";
+
+// ScanService manages security scans
+service ScanService {
+  rpc CreateScan(CreateScanRequest) returns (CreateScanResponse);
+  rpc GetScan(GetScanRequest) returns (Scan);
+  rpc ListScans(ListScansRequest) returns (ListScansResponse);
+  rpc CancelScan(CancelScanRequest) returns (google.protobuf.Empty);
+  rpc GetFindings(GetFindingsRequest) returns (GetFindingsResponse);
+  rpc UpdateScan(UpdateScanRequest) returns (Scan);
+}
+
+// Scan represents a security scan
+message Scan {
+  string id = 1;
+  string organization_id = 2;
+  string project_id = 3;
+  ScanStatus status = 4;
+  repeated ScanType scan_types = 5;
+  google.protobuf.Timestamp created_at = 6;
+  google.protobuf.Timestamp updated_at = 7;
+  google.protobuf.Timestamp completed_at = 8;
+  string git_url = 9;
+  string git_branch = 10;
+  string git_commit = 11;
+  int32 total_findings = 12;
+  map<string, int32> findings_by_severity = 13; // critical, high, medium, low
+  string error_message = 14;
+}
+
+// ScanStatus represents the state of a scan
+enum ScanStatus {
+  SCAN_STATUS_UNSPECIFIED = 0;
+  QUEUED = 1;
+  RUNNING = 2;
+  COMPLETED = 3;
+  FAILED = 4;
+  CANCELLED = 5;
+}
+
+// ScanType represents types of security scans
+enum ScanType {
+  SCAN_TYPE_UNSPECIFIED = 0;
+  SAST = 1;      // Static Application Security Testing
+  SCA = 2;       // Software Composition Analysis
+  SECRETS = 3;   // Secrets detection
+  LICENSE = 4;   // License compliance
+}
+
+// Finding represents a security vulnerability
+message Finding {
+  string id = 1;
+  string scan_id = 2;
+  ScanType scan_type = 3;
+  Severity severity = 4;
+  string title = 5;
+  string description = 6;
+  string file_path = 7;
+  int32 line_number = 8;
+  string code_snippet = 9;
+  string cve_id = 10;
+  string cwe_id = 11;
+  repeated string references = 12;
+  google.protobuf.Timestamp created_at = 13;
+}
+
+// Severity levels for findings
+enum Severity {
+  SEVERITY_UNSPECIFIED = 0;
+  CRITICAL = 1;
+  HIGH = 2;
+  MEDIUM = 3;
+  LOW = 4;
+  INFO = 5;
+}
+
+// CreateScanRequest
+message CreateScanRequest {
+  string organization_id = 1;
+  string project_id = 2;
+  repeated ScanType scan_types = 3;
+  string git_url = 4;
+  string git_branch = 5;
+  string git_commit = 6;
+}
+
+// CreateScanResponse
+message CreateScanResponse {
+  Scan scan = 1;
+}
+
+// GetScanRequest
+message GetScanRequest {
+  string id = 1;
+}
+
+// ListScansRequest
+message ListScansRequest {
+  string organization_id = 1;
+  string project_id = 2;
+  ScanStatus status = 3;
+  int32 page_size = 4;
+  string page_token = 5;
+}
+
+// ListScansResponse
+message ListScansResponse {
+  repeated Scan scans = 1;
+  string next_page_token = 2;
+  int32 total_count = 3;
+}
+
+// CancelScanRequest
+message CancelScanRequest {
+  string id = 1;
+}
+
+// GetFindingsRequest
+message GetFindingsRequest {
+  string scan_id = 1;
+  ScanType scan_type = 2;
+  Severity severity = 3;
+  int32 page_size = 4;
+  string page_token = 5;
+}
+
+// GetFindingsResponse
+message GetFindingsResponse {
+  repeated Finding findings = 1;
+  string next_page_token = 2;
+  int32 total_count = 3;
+}
+
+// UpdateScanRequest
+message UpdateScanRequest {
+  string id = 1;
+  ScanStatus status = 2;
+  int32 total_findings = 3;
+  map<string, int32> findings_by_severity = 4;
+  string error_message = 5;
+}
