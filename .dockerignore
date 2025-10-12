@@ -1,0 +1,39 @@
+# Git
+.git
+.gitignore
+.github
+
+# Build artifacts
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+# cloudscan-orchestrator-* # Commented out - need binaries for Docker build
+output_temp/
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# Documentation
+*.md
+README*
+docs/
+LICENSE
+
+# Test files
+*_test.go
+testdata/
+
+# CI/CD
+.gitlab-ci.yml
+
+# Misc
+.DS_Store
+Thumbs.db
