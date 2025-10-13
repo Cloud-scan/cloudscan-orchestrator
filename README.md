@@ -374,7 +374,7 @@ See [cloudscan-umbrella](https://github.com/cloudscan/cloudscan-umbrella) for co
 **Code style:**
 - Follow Go conventions
 - Run `gofmt` and `golint`
-- Add unit tests for new features 
+- Add unit tests for new features
 
 ---
 
