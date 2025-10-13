@@ -369,7 +369,7 @@ See [cloudscan-umbrella](https://github.com/cloudscan/cloudscan-umbrella) for co
 1. Fork the repository
 2. Create a feature branch
 3. Make changes with tests
-4. Submit a pull request
+4. Submit a pull request 
 
 **Code style:**
 - Follow Go conventions
