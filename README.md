@@ -378,6 +378,6 @@ See [cloudscan-umbrella](https://github.com/cloudscan/cloudscan-umbrella) for co
 
 ---
 
-## 📄 License
+## 📄 License 
 
 Apache 2.0 - See [LICENSE](../LICENSE)
