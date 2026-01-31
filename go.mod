@@ -2,8 +2,6 @@ module github.com/cloud-scan/cloudscan-orchestrator
 
 go 1.24.0
 
-toolchain go1.24.10
-
 require (
 	github.com/cloud-scan/cloudscan-storage v0.0.0-20260131205335-3b2d09628a2e
 	github.com/google/uuid v1.6.0
