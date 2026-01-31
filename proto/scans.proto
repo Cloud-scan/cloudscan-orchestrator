@@ -2,19 +2,23 @@ syntax = "proto3";
 
 package cloudscan;
 
-option go_package = "github.com/cloudscan/cloudscan-orchestrator/proto";
+option go_package = "github.com/cloud-scan/cloudscan-orchestrator/generated/proto";
 
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/empty.proto";
 
 // ScanService manages security scans
 service ScanService {
+  // UI/API Gateway calls
   rpc CreateScan(CreateScanRequest) returns (CreateScanResponse);
   rpc GetScan(GetScanRequest) returns (Scan);
   rpc ListScans(ListScansRequest) returns (ListScansResponse);
   rpc CancelScan(CancelScanRequest) returns (google.protobuf.Empty);
   rpc GetFindings(GetFindingsRequest) returns (GetFindingsResponse);
+
+  // Runner calls
   rpc UpdateScan(UpdateScanRequest) returns (Scan);
+  rpc CreateFindings(CreateFindingsRequest) returns (CreateFindingsResponse);
 }
 
 // Scan represents a security scan
@@ -31,7 +35,7 @@ message Scan {
   string git_branch = 10;
   string git_commit = 11;
   int32 total_findings = 12;
-  map<string, int32> findings_by_severity = 13; // critical, high, medium, low
+  map<string, int32> findings_by_severity = 13;  // critical, high, medium, low
   string error_message = 14;
 }
 
@@ -48,10 +52,10 @@ enum ScanStatus {
 // ScanType represents types of security scans
 enum ScanType {
   SCAN_TYPE_UNSPECIFIED = 0;
-  SAST = 1;      // Static Application Security Testing
-  SCA = 2;       // Software Composition Analysis
-  SECRETS = 3;   // Secrets detection
-  LICENSE = 4;   // License compliance
+  SAST = 1;     // Static Application Security Testing
+  SCA = 2;      // Software Composition Analysis
+  SECRETS = 3;  // Secrets detection
+  LICENSE = 4;  // License compliance
 }
 
 // Finding represents a security vulnerability
@@ -89,6 +93,8 @@ message CreateScanRequest {
   string git_url = 4;
   string git_branch = 5;
   string git_commit = 6;
+  string source_artifact_id =
+      7;  // Artifact ID from storage service (already uploaded by UI)
 }
 
 // CreateScanResponse
@@ -138,11 +144,22 @@ message GetFindingsResponse {
   int32 total_count = 3;
 }
 
-// UpdateScanRequest
+// UpdateScanRequest (called by runner)
 message UpdateScanRequest {
   string id = 1;
   ScanStatus status = 2;
   int32 total_findings = 3;
   map<string, int32> findings_by_severity = 4;
   string error_message = 5;
+}
+
+// CreateFindingsRequest (called by runner to upload findings)
+message CreateFindingsRequest {
+  string scan_id = 1;
+  repeated Finding findings = 2;
+}
+
+// CreateFindingsResponse
+message CreateFindingsResponse {
+  int32 created_count = 1;
 }

@@ -18,11 +18,11 @@ clean:
 	rm -rf output_temp
 
 proto_lint:
-	clang-format -style=google -i ./protobuf/*.proto 2>/dev/null || true
+	clang-format -style=google -i ./proto/*.proto 2>/dev/null || true
 
 proto: proto_lint
-	mkdir -p generated/protobuf
-	protoc -I protobuf --go_out=./generated/protobuf --go_opt=paths=source_relative --go-grpc_out=./generated/protobuf --go-grpc_opt=paths=source_relative ./protobuf/*.proto
+	mkdir -p generated/proto
+	protoc -I proto --go_out=./generated/proto --go_opt=paths=source_relative --go-grpc_out=./generated/proto --go-grpc_opt=paths=source_relative ./proto/*.proto
 
 prerequisites:
 	@echo "Installing Go dependencies..."
