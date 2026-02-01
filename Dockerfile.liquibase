@@ -1,0 +1,31 @@
+# Dockerfile for CloudScan Orchestrator - Liquibase Migrations
+# This image runs database migrations using Liquibase
+
+FROM liquibase/liquibase:4.29-alpine
+
+# Switch to root for installation
+USER root
+
+# Install PostgreSQL JDBC driver
+RUN lpm add postgresql --global
+
+# Create liquibase user and group
+RUN addgroup -g 1000 liquibase && \
+    adduser -D -u 1000 -G liquibase liquibase
+
+# Create changelog directory
+RUN mkdir -p /liquibase/changelog && \
+    chown -R liquibase:liquibase /liquibase
+
+# Copy changelogs
+COPY --chown=liquibase:liquibase liquibase/changelog/ /liquibase/changelog/
+COPY --chown=liquibase:liquibase liquibase/liquibase.properties /liquibase/liquibase.properties
+
+# Switch to liquibase user
+USER liquibase
+
+WORKDIR /liquibase
+
+# Default command: update database
+ENTRYPOINT ["docker-entrypoint.sh"]
+CMD ["--defaults-file=/liquibase/liquibase.properties", "update"]
