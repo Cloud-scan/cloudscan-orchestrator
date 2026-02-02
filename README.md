@@ -7,7 +7,7 @@
 ## 🎯 Overview
 
 The **cloudscan-orchestrator** is the heart of the CloudScan platform. It:
-
+ 
 - 📋 Manages scan lifecycle (create, queue, execute, complete)
 - 🚀 Dispatches Kubernetes Jobs for scanner runners
 - 🗄️ Persists scan metadata and findings in PostgreSQL
