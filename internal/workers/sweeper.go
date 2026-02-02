@@ -11,11 +11,12 @@ import (
 
 // Sweeper monitors Kubernetes job status and updates scan records
 type Sweeper struct {
-	scanRepo      interfaces.ScanRepository
-	jobDispatcher interfaces.JobDispatcher
-	interval      time.Duration
-	logger        *log.Entry
-	stopChan      chan struct{}
+	scanRepo         interfaces.ScanRepository
+	jobDispatcher    interfaces.JobDispatcher
+	interval         time.Duration
+	defaultNamespace string
+	logger           *log.Entry
+	stopChan         chan struct{}
 }
 
 // NewSweeper creates a new sweeper worker
@@ -23,13 +24,15 @@ func NewSweeper(
 	scanRepo interfaces.ScanRepository,
 	jobDispatcher interfaces.JobDispatcher,
 	interval time.Duration,
+	defaultNamespace string,
 ) *Sweeper {
 	return &Sweeper{
-		scanRepo:      scanRepo,
-		jobDispatcher: jobDispatcher,
-		interval:      interval,
-		logger:        log.WithField("component", "sweeper"),
-		stopChan:      make(chan struct{}),
+		scanRepo:         scanRepo,
+		jobDispatcher:    jobDispatcher,
+		interval:         interval,
+		defaultNamespace: defaultNamespace,
+		logger:           log.WithField("component", "sweeper"),
+		stopChan:         make(chan struct{}),
 	}
 }
 
@@ -107,8 +110,9 @@ func (s *Sweeper) processScan(ctx context.Context, scan *domain.Scan) {
 		return
 	}
 
-	jobNamespace := ""
-	if scan.JobNamespace != nil {
+	// Use scan's namespace or fall back to default namespace
+	jobNamespace := s.defaultNamespace
+	if scan.JobNamespace != nil && *scan.JobNamespace != "" {
 		jobNamespace = *scan.JobNamespace
 	}
 
