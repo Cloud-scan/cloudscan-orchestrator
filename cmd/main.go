@@ -147,7 +147,8 @@ func main() {
 	sweeper := workers.NewSweeper(
 		scanRepo,
 		jobDispatcher,
-		30*time.Second, // Check every 30 seconds
+		30*time.Second,          // Check every 30 seconds
+		cfg.Kubernetes.Namespace, // Default namespace for jobs
 	)
 
 	cleaner := workers.NewCleaner(
@@ -155,8 +156,9 @@ func main() {
 		findingRepo,
 		storageClient,
 		jobDispatcher,
-		90,      // 90 days retention
-		"00:00", // Cleanup at midnight
+		90,                       // 90 days retention
+		"00:00",                  // Cleanup at midnight
+		cfg.Kubernetes.Namespace, // Default namespace for jobs
 	)
 
 	// Start background workers
