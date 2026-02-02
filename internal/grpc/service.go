@@ -426,10 +426,16 @@ func convertFindingToProto(finding *domain.Finding) *pb.Finding {
 }
 
 func convertFindingFromProto(protoFinding *pb.Finding, scanID uuid.UUID) *domain.Finding {
+	scanType := convertScanTypeFromProto(protoFinding.ScanType)
+
+	// Derive tool name from scan type (required field in database)
+	toolName := deriveToolName(scanType)
+
 	return &domain.Finding{
 		ID:          uuid.New(),
 		ScanID:      scanID,
-		ScanType:    convertScanTypeFromProto(protoFinding.ScanType),
+		ScanType:    scanType,
+		ToolName:    toolName,
 		Severity:    convertSeverityFromProto(protoFinding.Severity),
 		Title:       protoFinding.Title,
 		Description: protoFinding.Description,
@@ -438,6 +444,22 @@ func convertFindingFromProto(protoFinding *pb.Finding, scanID uuid.UUID) *domain
 		CodeSnippet: protoFinding.CodeSnippet,
 		CVEID:       protoFinding.CveId,
 		CWEID:       protoFinding.CweId,
+	}
+}
+
+// deriveToolName returns the default tool name for a scan type
+func deriveToolName(scanType domain.ScanType) string {
+	switch scanType {
+	case domain.ScanTypeSAST:
+		return "semgrep"
+	case domain.ScanTypeSCA:
+		return "trivy"
+	case domain.ScanTypeSecrets:
+		return "gitleaks"
+	case domain.ScanTypeLicense:
+		return "trivy"
+	default:
+		return "unknown"
 	}
 }
 
