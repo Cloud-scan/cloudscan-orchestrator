@@ -150,8 +150,12 @@ func (c *Cleaner) cleanupScan(ctx context.Context, scan *domain.Scan) error {
 	logger.Debug("Cleaning up scan")
 
 	// 1. Delete Kubernetes job if it exists
-	if scan.JobName != "" {
-		if err := c.jobDispatcher.DeleteJob(ctx, scan.JobNamespace, scan.JobName); err != nil {
+	if scan.JobName != nil && *scan.JobName != "" {
+		jobNamespace := ""
+		if scan.JobNamespace != nil {
+			jobNamespace = *scan.JobNamespace
+		}
+		if err := c.jobDispatcher.DeleteJob(ctx, jobNamespace, *scan.JobName); err != nil {
 			logger.WithError(err).Warn("Failed to delete Kubernetes job")
 			// Continue cleanup even if job deletion fails
 		} else {
@@ -161,8 +165,8 @@ func (c *Cleaner) cleanupScan(ctx context.Context, scan *domain.Scan) error {
 
 	// 2. Collect artifact IDs to delete
 	var artifactIDs []string
-	if scan.SourceArchiveKey != "" {
-		artifactIDs = append(artifactIDs, scan.SourceArchiveKey)
+	if scan.SourceArchiveKey != nil && *scan.SourceArchiveKey != "" {
+		artifactIDs = append(artifactIDs, *scan.SourceArchiveKey)
 	}
 	// TODO: Add results artifact key when implemented
 

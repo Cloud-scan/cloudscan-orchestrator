@@ -76,9 +76,14 @@ func (s *ScanServiceServer) CreateScan(ctx context.Context, req *pb.CreateScanRe
 	if err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, "invalid project_id: %v", err)
 	}
-	userID, err := uuid.Parse(req.UserId)
-	if err != nil {
-		return nil, status.Errorf(codes.InvalidArgument, "invalid user_id: %v", err)
+
+	// Parse user_id (optional - nullable in DB)
+	var userID uuid.UUID
+	if req.UserId != "" {
+		userID, err = uuid.Parse(req.UserId)
+		if err != nil {
+			return nil, status.Errorf(codes.InvalidArgument, "invalid user_id: %v", err)
+		}
 	}
 
 	// Convert scan types
@@ -96,10 +101,10 @@ func (s *ScanServiceServer) CreateScan(ctx context.Context, req *pb.CreateScanRe
 		UserID:           userID,
 		Status:           domain.ScanStatusQueued,
 		ScanTypes:        scanTypes,
-		RepositoryURL:    req.GitUrl,
-		Branch:           req.GitBranch,
-		CommitSHA:        req.GitCommit,
-		SourceArchiveKey: req.SourceArtifactId,
+		RepositoryURL:    stringPtr(req.GitUrl),
+		Branch:           stringPtr(req.GitBranch),
+		CommitSHA:        stringPtr(req.GitCommit),
+		SourceArchiveKey: stringPtr(req.SourceArtifactId),
 		CreatedAt:        now,
 		UpdatedAt:        now,
 	}
@@ -216,8 +221,10 @@ func (s *ScanServiceServer) CancelScan(ctx context.Context, req *pb.CancelScanRe
 	}
 
 	// Cancel the Kubernetes job if running
-	if scan.JobName != "" {
-		if err := s.jobDispatcher.CancelJob(ctx, scan.JobNamespace, scan.JobName); err != nil {
+	if scan.JobName != nil && *scan.JobName != "" {
+		jobNamespace := stringValue(scan.JobNamespace)
+		jobName := stringValue(scan.JobName)
+		if err := s.jobDispatcher.CancelJob(ctx, jobNamespace, jobName); err != nil {
 			logger.WithError(err).Warn("Failed to cancel Kubernetes job")
 		}
 	}
@@ -304,7 +311,7 @@ func (s *ScanServiceServer) UpdateScan(ctx context.Context, req *pb.UpdateScanRe
 	}
 
 	if req.ErrorMessage != "" {
-		scan.ErrorMessage = req.ErrorMessage
+		scan.ErrorMessage = stringPtr(req.ErrorMessage)
 	}
 
 	// Update in database
@@ -367,9 +374,9 @@ func convertScanToProto(scan *domain.Scan) *pb.Scan {
 		OrganizationId: scan.OrganizationID.String(),
 		ProjectId:      scan.ProjectID.String(),
 		Status:         convertScanStatusToProto(scan.Status),
-		GitUrl:         scan.RepositoryURL,
-		GitBranch:      scan.Branch,
-		GitCommit:      scan.CommitSHA,
+		GitUrl:         stringValue(scan.RepositoryURL),
+		GitBranch:      stringValue(scan.Branch),
+		GitCommit:      stringValue(scan.CommitSHA),
 		TotalFindings:  int32(scan.FindingsCount),
 		CreatedAt:      timestamppb.New(scan.CreatedAt),
 		UpdatedAt:      timestamppb.New(scan.UpdatedAt),
@@ -387,8 +394,8 @@ func convertScanToProto(scan *domain.Scan) *pb.Scan {
 	}
 
 	// Add error message if available
-	if scan.ErrorMessage != "" {
-		protoScan.ErrorMessage = scan.ErrorMessage
+	if scan.ErrorMessage != nil && *scan.ErrorMessage != "" {
+		protoScan.ErrorMessage = *scan.ErrorMessage
 	}
 
 	// Build findings by severity map
@@ -526,4 +533,20 @@ func convertSeverityFromProto(severity pb.Severity) domain.Severity {
 	default:
 		return ""
 	}
+}
+
+// stringPtr returns a pointer to the string if it's not empty, otherwise nil
+func stringPtr(s string) *string {
+	if s == "" {
+		return nil
+	}
+	return &s
+}
+
+// stringValue returns the string value from a pointer, or empty string if nil
+func stringValue(s *string) string {
+	if s == nil {
+		return ""
+	}
+	return *s
 }

@@ -37,26 +37,26 @@ type Scan struct {
 	ScanTypes      []ScanType `json:"scan_types" db:"scan_types"`
 
 	// Source code information
-	RepositoryURL string `json:"repository_url" db:"repository_url"`
-	Branch        string `json:"branch" db:"branch"`
-	CommitSHA     string `json:"commit_sha" db:"commit_sha"`
+	RepositoryURL *string `json:"repository_url,omitempty" db:"repository_url"`
+	Branch        *string `json:"branch,omitempty" db:"branch"`
+	CommitSHA     *string `json:"commit_sha,omitempty" db:"commit_sha"`
 
 	// Artifact storage
-	SourceArchiveKey string `json:"source_archive_key" db:"source_archive_key"` // S3/MinIO key
+	SourceArchiveKey *string `json:"source_archive_key,omitempty" db:"source_archive_key"` // S3/MinIO key
 
 	// Kubernetes job information
-	JobName      string `json:"job_name" db:"job_name"`
-	JobNamespace string `json:"job_namespace" db:"job_namespace"`
+	JobName      *string `json:"job_name,omitempty" db:"job_name"`
+	JobNamespace *string `json:"job_namespace,omitempty" db:"job_namespace"`
 
 	// Results
-	FindingsCount  int       `json:"findings_count" db:"findings_count"`
-	CriticalCount  int       `json:"critical_count" db:"critical_count"`
-	HighCount      int       `json:"high_count" db:"high_count"`
-	MediumCount    int       `json:"medium_count" db:"medium_count"`
-	LowCount       int       `json:"low_count" db:"low_count"`
-	StartedAt      *time.Time `json:"started_at" db:"started_at"`
-	CompletedAt    *time.Time `json:"completed_at" db:"completed_at"`
-	ErrorMessage   string     `json:"error_message" db:"error_message"`
+	FindingsCount  int        `json:"findings_count" db:"findings_count"`
+	CriticalCount  int        `json:"critical_count" db:"critical_count"`
+	HighCount      int        `json:"high_count" db:"high_count"`
+	MediumCount    int        `json:"medium_count" db:"medium_count"`
+	LowCount       int        `json:"low_count" db:"low_count"`
+	StartedAt      *time.Time `json:"started_at,omitempty" db:"started_at"`
+	CompletedAt    *time.Time `json:"completed_at,omitempty" db:"completed_at"`
+	ErrorMessage   *string    `json:"error_message,omitempty" db:"error_message"`
 
 	// Audit
 	CreatedAt time.Time `json:"created_at" db:"created_at"`

@@ -102,13 +102,18 @@ func (s *Sweeper) processScan(ctx context.Context, scan *domain.Scan) {
 	})
 
 	// If no job name yet, skip (job not created yet)
-	if scan.JobName == "" {
+	if scan.JobName == nil || *scan.JobName == "" {
 		logger.Debug("Scan has no job name, skipping")
 		return
 	}
 
+	jobNamespace := ""
+	if scan.JobNamespace != nil {
+		jobNamespace = *scan.JobNamespace
+	}
+
 	// Get job status from Kubernetes
-	jobStatus, err := s.jobDispatcher.GetJobStatus(ctx, scan.JobNamespace, scan.JobName)
+	jobStatus, err := s.jobDispatcher.GetJobStatus(ctx, jobNamespace, *scan.JobName)
 	if err != nil {
 		logger.WithError(err).Warn("Failed to get job status")
 		return
@@ -147,7 +152,7 @@ func (s *Sweeper) processScan(ctx context.Context, scan *domain.Scan) {
 
 		if errorMessage == nil {
 			// Try to get logs
-			logs, err := s.jobDispatcher.GetJobLogs(ctx, scan.JobNamespace, scan.JobName)
+			logs, err := s.jobDispatcher.GetJobLogs(ctx, jobNamespace, *scan.JobName)
 			if err == nil && logs != "" {
 				// Take last 500 chars of logs as error message
 				if len(logs) > 500 {
@@ -180,7 +185,7 @@ func (s *Sweeper) processScan(ctx context.Context, scan *domain.Scan) {
 	// Update scan status in database
 	scan.Status = newStatus
 	if errorMessage != nil {
-		scan.ErrorMessage = *errorMessage
+		scan.ErrorMessage = errorMessage
 	}
 
 	if newStatus == domain.ScanStatusCompleted || newStatus == domain.ScanStatusFailed {

@@ -42,10 +42,10 @@ func (d *JobDispatcher) CreateJob(ctx context.Context, scan *domain.Scan) (*batc
 
 	// If this is an artifact-based scan, get the presigned download URL
 	var downloadURL string
-	if scan.SourceArchiveKey != "" {
-		logger.WithField("artifact_id", scan.SourceArchiveKey).Info("Fetching artifact download URL")
+	if scan.SourceArchiveKey != nil && *scan.SourceArchiveKey != "" {
+		logger.WithField("artifact_id", *scan.SourceArchiveKey).Info("Fetching artifact download URL")
 
-		artifactResp, err := d.storageClient.GetArtifact(ctx, scan.SourceArchiveKey)
+		artifactResp, err := d.storageClient.GetArtifact(ctx, *scan.SourceArchiveKey)
 		if err != nil {
 			logger.WithError(err).Error("Failed to get artifact download URL")
 			return nil, fmt.Errorf("failed to get artifact download URL: %w", err)
@@ -306,11 +306,19 @@ func (d *JobDispatcher) buildJobSpec(jobName string, scan *domain.Scan, download
 		{Name: "ORGANIZATION_ID", Value: scan.OrganizationID.String()},
 		{Name: "PROJECT_ID", Value: scan.ProjectID.String()},
 		{Name: "SCAN_TYPES", Value: scanTypesStr},
-		{Name: "SOURCE_ARTIFACT_ID", Value: scan.SourceArchiveKey},
-		{Name: "REPOSITORY_URL", Value: scan.RepositoryURL},
-		{Name: "BRANCH", Value: scan.Branch},
 		{Name: "ORCHESTRATOR_ENDPOINT", Value: d.config.OrchestratorEndpoint},
 		{Name: "STORAGE_SERVICE_ENDPOINT", Value: d.config.StorageServiceEndpoint},
+	}
+
+	// Add optional fields if present
+	if scan.SourceArchiveKey != nil && *scan.SourceArchiveKey != "" {
+		env = append(env, corev1.EnvVar{Name: "SOURCE_ARTIFACT_ID", Value: *scan.SourceArchiveKey})
+	}
+	if scan.RepositoryURL != nil && *scan.RepositoryURL != "" {
+		env = append(env, corev1.EnvVar{Name: "REPOSITORY_URL", Value: *scan.RepositoryURL})
+	}
+	if scan.Branch != nil && *scan.Branch != "" {
+		env = append(env, corev1.EnvVar{Name: "BRANCH", Value: *scan.Branch})
 	}
 
 	// Add download URL if this is an artifact-based scan
@@ -318,8 +326,8 @@ func (d *JobDispatcher) buildJobSpec(jobName string, scan *domain.Scan, download
 		env = append(env, corev1.EnvVar{Name: "SOURCE_DOWNLOAD_URL", Value: downloadURL})
 	}
 
-	if scan.CommitSHA != "" {
-		env = append(env, corev1.EnvVar{Name: "COMMIT_SHA", Value: scan.CommitSHA})
+	if scan.CommitSHA != nil && *scan.CommitSHA != "" {
+		env = append(env, corev1.EnvVar{Name: "COMMIT_SHA", Value: *scan.CommitSHA})
 	}
 
 	// Build resource requirements

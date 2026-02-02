@@ -895,3 +895,16 @@ ALTER TABLE scans ALTER COLUMN commit_sha DROP NOT NULL;
 --comment: Make user_id nullable for automated/system scans
 
 ALTER TABLE scans ALTER COLUMN user_id DROP NOT NULL;
+
+--changeset cloudscan:9 labels:v1.0.0 context:schema
+--comment: Remove FK constraints for microservices independence and make repository_url/branch nullable
+
+-- Remove foreign key constraints (Gateway validates org/project before sending to Orchestrator)
+ALTER TABLE scans DROP CONSTRAINT IF EXISTS scans_organization_id_fkey;
+ALTER TABLE scans DROP CONSTRAINT IF EXISTS scans_project_id_fkey;
+ALTER TABLE projects DROP CONSTRAINT IF EXISTS projects_organization_id_fkey;
+ALTER TABLE audit_logs DROP CONSTRAINT IF EXISTS audit_logs_organization_id_fkey;
+
+-- Make repository_url and branch nullable (for artifact-based scans)
+ALTER TABLE scans ALTER COLUMN repository_url DROP NOT NULL;
+ALTER TABLE scans ALTER COLUMN branch DROP NOT NULL;
