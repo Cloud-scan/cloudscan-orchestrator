@@ -1,9 +1,8 @@
 --liquibase formatted sql
 
---changeset cloudscan:1 labels:v1.0.0 context:schema
---comment: CloudScan Orchestrator - Initial Schema
+--changeset cloudscan:1 labels:v1.0.0 context:schema splitStatements:false
+--comment: CloudScan Orchestrator - Base Tables
 
--- Enable UUID extension
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- =============================================================================
@@ -95,6 +94,10 @@ CREATE TABLE scans_2025_04 PARTITION OF scans
 CREATE TABLE scans_2025_05 PARTITION OF scans
     FOR VALUES FROM ('2025-05-01') TO ('2025-06-01');
 
+
+--changeset cloudscan:2 labels:v1.0.0 context:schema splitStatements:false
+--comment: CloudScan Orchestrator - Scans Table
+
 CREATE TABLE scans_2025_06 PARTITION OF scans
     FOR VALUES FROM ('2025-06-01') TO ('2025-07-01');
 
@@ -108,6 +111,10 @@ CREATE INDEX idx_scans_job_name ON scans(job_name);
 -- =============================================================================
 -- Findings
 -- =============================================================================
+
+--changeset cloudscan:3 labels:v1.0.0 context:schema splitStatements:false
+--comment: CloudScan Orchestrator - Findings and Audit Tables
+
 CREATE TABLE findings (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     scan_id UUID NOT NULL,
@@ -148,7 +155,7 @@ CREATE TABLE findings (
 
     -- Remediation
     remediation TEXT,
-    references TEXT[],
+    "references" TEXT[],
 
     -- Metadata
     raw_output JSONB,
@@ -181,17 +188,18 @@ CREATE INDEX idx_audit_logs_user ON audit_logs(user_id, created_at DESC);
 CREATE INDEX idx_audit_logs_resource ON audit_logs(resource_type, resource_id);
 
 -- =============================================================================
--- Functions
--- =============================================================================
 
--- Function to update updated_at timestamp
+--changeset cloudscan:4 labels:v1.0.0 context:schema splitStatements:false
+--comment: CloudScan Orchestrator - Functions and Triggers
+
 CREATE OR REPLACE FUNCTION update_updated_at_column()
-RETURNS TRIGGER AS $$
+RETURNS TRIGGER AS $BODY$
 BEGIN
     NEW.updated_at = NOW();
     RETURN NEW;
 END;
-$$ language 'plpgsql';
+$BODY$
+language 'plpgsql';
 
 -- Triggers to auto-update updated_at
 CREATE TRIGGER update_organizations_updated_at BEFORE UPDATE ON organizations
@@ -200,17 +208,7 @@ CREATE TRIGGER update_organizations_updated_at BEFORE UPDATE ON organizations
 CREATE TRIGGER update_projects_updated_at BEFORE UPDATE ON projects
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
---rollback DROP TRIGGER IF EXISTS update_projects_updated_at ON projects;
---rollback DROP TRIGGER IF EXISTS update_organizations_updated_at ON organizations;
---rollback DROP FUNCTION IF EXISTS update_updated_at_column();
---rollback DROP TABLE IF EXISTS audit_logs CASCADE;
---rollback DROP TABLE IF EXISTS findings CASCADE;
---rollback DROP TABLE IF EXISTS scans CASCADE;
---rollback DROP TABLE IF EXISTS projects CASCADE;
---rollback DROP TABLE IF EXISTS organizations CASCADE;
---rollback DROP EXTENSION IF EXISTS "uuid-ossp";
-
---changeset cloudscan:2 labels:v1.0.0 context:data
+--changeset cloudscan:5 labels:v1.0.0 context:data
 --comment: Insert sample data for development
 
 -- Sample organization

@@ -101,9 +101,7 @@ func main() {
 		},
 	}
 
-	jobDispatcher := k8s.NewJobDispatcher(k8sClient, jobConfig)
-
-	// Initialize storage client
+	// Initialize storage client (needed by job dispatcher)
 	storageClient, err := clients.NewStorageClient(
 		cfg.StorageService.Endpoint,
 		cfg.StorageService.Timeout,
@@ -115,6 +113,9 @@ func main() {
 	defer storageClient.Close()
 
 	log.Info("Storage service client initialized")
+
+	// Initialize job dispatcher with storage client
+	jobDispatcher := k8s.NewJobDispatcher(k8sClient, jobConfig, storageClient)
 
 	// Initialize gRPC service
 	scanService := grpcserver.NewScanServiceServer(

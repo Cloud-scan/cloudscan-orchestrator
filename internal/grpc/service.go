@@ -56,14 +56,14 @@ func (s *ScanServiceServer) CreateScan(ctx context.Context, req *pb.CreateScanRe
 	if req.ProjectId == "" {
 		return nil, status.Error(codes.InvalidArgument, "project_id is required")
 	}
-	if req.GitUrl == "" {
-		return nil, status.Error(codes.InvalidArgument, "git_url is required")
-	}
 	if len(req.ScanTypes) == 0 {
 		return nil, status.Error(codes.InvalidArgument, "at least one scan_type is required")
 	}
-	if req.SourceArtifactId == "" {
-		return nil, status.Error(codes.InvalidArgument, "source_artifact_id is required")
+
+	// Validate source: Either git_url OR source_artifact_id must be provided
+	// (API Gateway should fill in git_url from project if neither is provided)
+	if req.GitUrl == "" && req.SourceArtifactId == "" {
+		return nil, status.Error(codes.InvalidArgument, "either git_url or source_artifact_id is required")
 	}
 
 	// Parse UUIDs

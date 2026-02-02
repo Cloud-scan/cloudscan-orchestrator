@@ -19,17 +19,19 @@ import (
 
 // JobDispatcher implements interfaces.JobDispatcher using Kubernetes
 type JobDispatcher struct {
-	clientset *kubernetes.Clientset
-	config    *interfaces.JobConfig
-	logger    *log.Entry
+	clientset     *kubernetes.Clientset
+	config        *interfaces.JobConfig
+	storageClient interfaces.StorageClient
+	logger        *log.Entry
 }
 
 // NewJobDispatcher creates a new Kubernetes job dispatcher
-func NewJobDispatcher(clientset *kubernetes.Clientset, config *interfaces.JobConfig) interfaces.JobDispatcher {
+func NewJobDispatcher(clientset *kubernetes.Clientset, config *interfaces.JobConfig, storageClient interfaces.StorageClient) interfaces.JobDispatcher {
 	return &JobDispatcher{
-		clientset: clientset,
-		config:    config,
-		logger:    log.WithField("component", "k8s-dispatcher"),
+		clientset:     clientset,
+		config:        config,
+		storageClient: storageClient,
+		logger:        log.WithField("component", "k8s-dispatcher"),
 	}
 }
 
@@ -38,11 +40,26 @@ func (d *JobDispatcher) CreateJob(ctx context.Context, scan *domain.Scan) (*batc
 	logger := d.logger.WithField("scan_id", scan.ID.String())
 	logger.Info("Creating Kubernetes job for scan")
 
+	// If this is an artifact-based scan, get the presigned download URL
+	var downloadURL string
+	if scan.SourceArchiveKey != "" {
+		logger.WithField("artifact_id", scan.SourceArchiveKey).Info("Fetching artifact download URL")
+
+		artifactResp, err := d.storageClient.GetArtifact(ctx, scan.SourceArchiveKey)
+		if err != nil {
+			logger.WithError(err).Error("Failed to get artifact download URL")
+			return nil, fmt.Errorf("failed to get artifact download URL: %w", err)
+		}
+
+		downloadURL = artifactResp.SignedURL
+		logger.WithField("expiration", artifactResp.Expiration).Info("Retrieved artifact download URL")
+	}
+
 	// Generate job name (must be DNS-1123 compliant)
 	jobName := fmt.Sprintf("scan-%s", scan.ID.String()[:8])
 
-	// Build job spec
-	job := d.buildJobSpec(jobName, scan)
+	// Build job spec with download URL
+	job := d.buildJobSpec(jobName, scan, downloadURL)
 
 	// Create job in Kubernetes
 	createdJob, err := d.clientset.BatchV1().Jobs(d.config.Namespace).Create(ctx, job, metav1.CreateOptions{})
@@ -269,7 +286,7 @@ func (d *JobDispatcher) CancelJob(ctx context.Context, namespace, name string) e
 }
 
 // buildJobSpec constructs a Kubernetes Job specification for a scan
-func (d *JobDispatcher) buildJobSpec(jobName string, scan *domain.Scan) *batchv1.Job {
+func (d *JobDispatcher) buildJobSpec(jobName string, scan *domain.Scan, downloadURL string) *batchv1.Job {
 	// Convert scan types to comma-separated string
 	scanTypes := make([]string, len(scan.ScanTypes))
 	for i, st := range scan.ScanTypes {
@@ -294,6 +311,11 @@ func (d *JobDispatcher) buildJobSpec(jobName string, scan *domain.Scan) *batchv1
 		{Name: "BRANCH", Value: scan.Branch},
 		{Name: "ORCHESTRATOR_ENDPOINT", Value: d.config.OrchestratorEndpoint},
 		{Name: "STORAGE_SERVICE_ENDPOINT", Value: d.config.StorageServiceEndpoint},
+	}
+
+	// Add download URL if this is an artifact-based scan
+	if downloadURL != "" {
+		env = append(env, corev1.EnvVar{Name: "SOURCE_DOWNLOAD_URL", Value: downloadURL})
 	}
 
 	if scan.CommitSHA != "" {

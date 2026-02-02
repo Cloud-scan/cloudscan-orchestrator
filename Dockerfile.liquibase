@@ -6,14 +6,12 @@ FROM liquibase/liquibase:4.29-alpine
 # Switch to root for installation
 USER root
 
-# Install PostgreSQL JDBC driver
-RUN lpm add postgresql --global
+# Install PostgreSQL JDBC driver and client
+RUN lpm add postgresql --global && \
+    apk add --no-cache postgresql-client
 
-# Create liquibase user and group
-RUN addgroup -g 1000 liquibase && \
-    adduser -D -u 1000 -G liquibase liquibase
-
-# Create changelog directory
+# Create changelog directory and set ownership
+# Note: liquibase user/group already exists in base image
 RUN mkdir -p /liquibase/changelog && \
     chown -R liquibase:liquibase /liquibase
 
