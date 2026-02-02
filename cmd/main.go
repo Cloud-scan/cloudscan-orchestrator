@@ -138,6 +138,12 @@ func main() {
 	}
 
 	// Initialize workers
+	dispatcher := workers.NewDispatcher(
+		scanRepo,
+		jobDispatcher,
+		10*time.Second, // Check every 10 seconds for queued scans
+	)
+
 	sweeper := workers.NewSweeper(
 		scanRepo,
 		jobDispatcher,
@@ -154,6 +160,7 @@ func main() {
 	)
 
 	// Start background workers
+	go dispatcher.Start(ctx)
 	go sweeper.Start(ctx)
 	go cleaner.Start(ctx)
 
@@ -184,6 +191,7 @@ func main() {
 	defer cancel()
 
 	// Stop workers
+	dispatcher.Stop()
 	sweeper.Stop()
 	cleaner.Stop()
 
