@@ -12,14 +12,15 @@ import (
 
 // Cleaner enforces data retention policies by cleaning up old scans
 type Cleaner struct {
-	scanRepo       interfaces.ScanRepository
-	findingRepo    interfaces.FindingRepository
-	storageClient  interfaces.StorageClient
-	jobDispatcher  interfaces.JobDispatcher
-	retentionDays  int
-	cleanupTime    string // HH:MM format for daily cleanup time
-	logger         *log.Entry
-	stopChan       chan struct{}
+	scanRepo         interfaces.ScanRepository
+	findingRepo      interfaces.FindingRepository
+	storageClient    interfaces.StorageClient
+	jobDispatcher    interfaces.JobDispatcher
+	retentionDays    int
+	cleanupTime      string // HH:MM format for daily cleanup time
+	defaultNamespace string
+	logger           *log.Entry
+	stopChan         chan struct{}
 }
 
 // NewCleaner creates a new cleaner worker
@@ -30,16 +31,18 @@ func NewCleaner(
 	jobDispatcher interfaces.JobDispatcher,
 	retentionDays int,
 	cleanupTime string,
+	defaultNamespace string,
 ) *Cleaner {
 	return &Cleaner{
-		scanRepo:      scanRepo,
-		findingRepo:   findingRepo,
-		storageClient: storageClient,
-		jobDispatcher: jobDispatcher,
-		retentionDays: retentionDays,
-		cleanupTime:   cleanupTime,
-		logger:        log.WithField("component", "cleaner"),
-		stopChan:      make(chan struct{}),
+		scanRepo:         scanRepo,
+		findingRepo:      findingRepo,
+		storageClient:    storageClient,
+		jobDispatcher:    jobDispatcher,
+		retentionDays:    retentionDays,
+		cleanupTime:      cleanupTime,
+		defaultNamespace: defaultNamespace,
+		logger:           log.WithField("component", "cleaner"),
+		stopChan:         make(chan struct{}),
 	}
 }
 
@@ -151,8 +154,9 @@ func (c *Cleaner) cleanupScan(ctx context.Context, scan *domain.Scan) error {
 
 	// 1. Delete Kubernetes job if it exists
 	if scan.JobName != nil && *scan.JobName != "" {
-		jobNamespace := ""
-		if scan.JobNamespace != nil {
+		// Use scan's namespace or fall back to default namespace
+		jobNamespace := c.defaultNamespace
+		if scan.JobNamespace != nil && *scan.JobNamespace != "" {
 			jobNamespace = *scan.JobNamespace
 		}
 		if err := c.jobDispatcher.DeleteJob(ctx, jobNamespace, *scan.JobName); err != nil {
