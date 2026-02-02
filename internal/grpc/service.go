@@ -2,6 +2,7 @@ package grpc
 
 import (
 	"context"
+	"time"
 
 	"github.com/cloud-scan/cloudscan-orchestrator/internal/domain"
 	"github.com/cloud-scan/cloudscan-orchestrator/internal/interfaces"
@@ -75,6 +76,10 @@ func (s *ScanServiceServer) CreateScan(ctx context.Context, req *pb.CreateScanRe
 	if err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, "invalid project_id: %v", err)
 	}
+	userID, err := uuid.Parse(req.UserId)
+	if err != nil {
+		return nil, status.Errorf(codes.InvalidArgument, "invalid user_id: %v", err)
+	}
 
 	// Convert scan types
 	scanTypes := make([]domain.ScanType, len(req.ScanTypes))
@@ -83,16 +88,20 @@ func (s *ScanServiceServer) CreateScan(ctx context.Context, req *pb.CreateScanRe
 	}
 
 	// Create scan domain model
+	now := time.Now()
 	scan := &domain.Scan{
 		ID:               uuid.New(),
 		OrganizationID:   orgID,
 		ProjectID:        projectID,
+		UserID:           userID,
 		Status:           domain.ScanStatusQueued,
 		ScanTypes:        scanTypes,
 		RepositoryURL:    req.GitUrl,
 		Branch:           req.GitBranch,
 		CommitSHA:        req.GitCommit,
 		SourceArchiveKey: req.SourceArtifactId,
+		CreatedAt:        now,
+		UpdatedAt:        now,
 	}
 
 	// Save scan to database
