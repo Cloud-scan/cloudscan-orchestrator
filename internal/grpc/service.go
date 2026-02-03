@@ -366,6 +366,104 @@ func (s *ScanServiceServer) CreateFindings(ctx context.Context, req *pb.CreateFi
 	}, nil
 }
 
+// DeleteScan deletes a scan and all its data (findings, artifacts, k8s job)
+func (s *ScanServiceServer) DeleteScan(ctx context.Context, req *pb.DeleteScanRequest) (*emptypb.Empty, error) {
+	logger := s.logger.WithField("scan_id", req.Id)
+	logger.Info("Deleting scan")
+
+	scanID, err := uuid.Parse(req.Id)
+	if err != nil {
+		return nil, status.Errorf(codes.InvalidArgument, "invalid scan_id: %v", err)
+	}
+
+	// Get scan to retrieve job name and artifact keys
+	scan, err := s.scanRepo.Get(ctx, scanID)
+	if err != nil {
+		logger.WithError(err).Error("Failed to get scan")
+		return nil, status.Errorf(codes.NotFound, "scan not found: %v", err)
+	}
+
+	// 1. Delete Kubernetes job if it exists
+	if scan.JobName != nil && *scan.JobName != "" {
+		jobNamespace := stringValue(scan.JobNamespace)
+		if err := s.jobDispatcher.DeleteJob(ctx, jobNamespace, *scan.JobName); err != nil {
+			logger.WithError(err).Warn("Failed to delete Kubernetes job, continuing with cleanup")
+		} else {
+			logger.Debug("Deleted Kubernetes job")
+		}
+	}
+
+	// 2. Collect artifact IDs to delete
+	var artifactIDs []string
+	if scan.SourceArchiveKey != nil && *scan.SourceArchiveKey != "" {
+		artifactIDs = append(artifactIDs, *scan.SourceArchiveKey)
+	}
+
+	// 3. Delete artifacts from storage service
+	if len(artifactIDs) > 0 {
+		if err := s.storageClient.DeleteArtifacts(ctx, artifactIDs); err != nil {
+			logger.WithError(err).Warn("Failed to delete artifacts from storage, continuing with cleanup")
+		} else {
+			logger.WithField("artifact_count", len(artifactIDs)).Debug("Deleted artifacts from storage")
+		}
+	}
+
+	// 4. Delete findings from database
+	if err := s.findingRepo.DeleteByScanID(ctx, scan.ID); err != nil {
+		logger.WithError(err).Error("Failed to delete findings")
+		return nil, status.Errorf(codes.Internal, "failed to delete findings: %v", err)
+	}
+	logger.Debug("Deleted findings from database")
+
+	// 5. Delete scan from database
+	if err := s.scanRepo.Delete(ctx, scan.ID); err != nil {
+		logger.WithError(err).Error("Failed to delete scan")
+		return nil, status.Errorf(codes.Internal, "failed to delete scan: %v", err)
+	}
+
+	logger.Info("Scan deleted successfully")
+	return &emptypb.Empty{}, nil
+}
+
+// DeleteProjectScans deletes all scans for a project
+func (s *ScanServiceServer) DeleteProjectScans(ctx context.Context, req *pb.DeleteProjectScansRequest) (*pb.DeleteProjectScansResponse, error) {
+	logger := s.logger.WithField("project_id", req.ProjectId)
+	logger.Info("Deleting all scans for project")
+
+	projectID, err := uuid.Parse(req.ProjectId)
+	if err != nil {
+		return nil, status.Errorf(codes.InvalidArgument, "invalid project_id: %v", err)
+	}
+
+	// List all scans for this project
+	filter := interfaces.ScanFilter{
+		ProjectID: &projectID,
+	}
+	scans, err := s.scanRepo.List(ctx, filter)
+	if err != nil {
+		logger.WithError(err).Error("Failed to list project scans")
+		return nil, status.Errorf(codes.Internal, "failed to list project scans: %v", err)
+	}
+
+	logger.WithField("scan_count", len(scans)).Info("Found scans to delete")
+
+	deletedCount := 0
+	for _, scan := range scans {
+		// Delete each scan using DeleteScan logic
+		if _, err := s.DeleteScan(ctx, &pb.DeleteScanRequest{Id: scan.ID.String()}); err != nil {
+			logger.WithError(err).WithField("scan_id", scan.ID.String()).Error("Failed to delete scan")
+			// Continue with other scans even if one fails
+			continue
+		}
+		deletedCount++
+	}
+
+	logger.WithField("deleted_count", deletedCount).Info("Project scans deleted")
+	return &pb.DeleteProjectScansResponse{
+		DeletedCount: int32(deletedCount),
+	}, nil
+}
+
 // Conversion functions
 
 func convertScanToProto(scan *domain.Scan) *pb.Scan {

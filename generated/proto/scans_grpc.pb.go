@@ -20,13 +20,15 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	ScanService_CreateScan_FullMethodName     = "/cloudscan.ScanService/CreateScan"
-	ScanService_GetScan_FullMethodName        = "/cloudscan.ScanService/GetScan"
-	ScanService_ListScans_FullMethodName      = "/cloudscan.ScanService/ListScans"
-	ScanService_CancelScan_FullMethodName     = "/cloudscan.ScanService/CancelScan"
-	ScanService_GetFindings_FullMethodName    = "/cloudscan.ScanService/GetFindings"
-	ScanService_UpdateScan_FullMethodName     = "/cloudscan.ScanService/UpdateScan"
-	ScanService_CreateFindings_FullMethodName = "/cloudscan.ScanService/CreateFindings"
+	ScanService_CreateScan_FullMethodName         = "/cloudscan.ScanService/CreateScan"
+	ScanService_GetScan_FullMethodName            = "/cloudscan.ScanService/GetScan"
+	ScanService_ListScans_FullMethodName          = "/cloudscan.ScanService/ListScans"
+	ScanService_CancelScan_FullMethodName         = "/cloudscan.ScanService/CancelScan"
+	ScanService_GetFindings_FullMethodName        = "/cloudscan.ScanService/GetFindings"
+	ScanService_DeleteScan_FullMethodName         = "/cloudscan.ScanService/DeleteScan"
+	ScanService_DeleteProjectScans_FullMethodName = "/cloudscan.ScanService/DeleteProjectScans"
+	ScanService_UpdateScan_FullMethodName         = "/cloudscan.ScanService/UpdateScan"
+	ScanService_CreateFindings_FullMethodName     = "/cloudscan.ScanService/CreateFindings"
 )
 
 // ScanServiceClient is the client API for ScanService service.
@@ -41,6 +43,8 @@ type ScanServiceClient interface {
 	ListScans(ctx context.Context, in *ListScansRequest, opts ...grpc.CallOption) (*ListScansResponse, error)
 	CancelScan(ctx context.Context, in *CancelScanRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	GetFindings(ctx context.Context, in *GetFindingsRequest, opts ...grpc.CallOption) (*GetFindingsResponse, error)
+	DeleteScan(ctx context.Context, in *DeleteScanRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	DeleteProjectScans(ctx context.Context, in *DeleteProjectScansRequest, opts ...grpc.CallOption) (*DeleteProjectScansResponse, error)
 	// Runner calls
 	UpdateScan(ctx context.Context, in *UpdateScanRequest, opts ...grpc.CallOption) (*Scan, error)
 	CreateFindings(ctx context.Context, in *CreateFindingsRequest, opts ...grpc.CallOption) (*CreateFindingsResponse, error)
@@ -104,6 +108,26 @@ func (c *scanServiceClient) GetFindings(ctx context.Context, in *GetFindingsRequ
 	return out, nil
 }
 
+func (c *scanServiceClient) DeleteScan(ctx context.Context, in *DeleteScanRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, ScanService_DeleteScan_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *scanServiceClient) DeleteProjectScans(ctx context.Context, in *DeleteProjectScansRequest, opts ...grpc.CallOption) (*DeleteProjectScansResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(DeleteProjectScansResponse)
+	err := c.cc.Invoke(ctx, ScanService_DeleteProjectScans_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *scanServiceClient) UpdateScan(ctx context.Context, in *UpdateScanRequest, opts ...grpc.CallOption) (*Scan, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(Scan)
@@ -136,6 +160,8 @@ type ScanServiceServer interface {
 	ListScans(context.Context, *ListScansRequest) (*ListScansResponse, error)
 	CancelScan(context.Context, *CancelScanRequest) (*emptypb.Empty, error)
 	GetFindings(context.Context, *GetFindingsRequest) (*GetFindingsResponse, error)
+	DeleteScan(context.Context, *DeleteScanRequest) (*emptypb.Empty, error)
+	DeleteProjectScans(context.Context, *DeleteProjectScansRequest) (*DeleteProjectScansResponse, error)
 	// Runner calls
 	UpdateScan(context.Context, *UpdateScanRequest) (*Scan, error)
 	CreateFindings(context.Context, *CreateFindingsRequest) (*CreateFindingsResponse, error)
@@ -163,6 +189,12 @@ func (UnimplementedScanServiceServer) CancelScan(context.Context, *CancelScanReq
 }
 func (UnimplementedScanServiceServer) GetFindings(context.Context, *GetFindingsRequest) (*GetFindingsResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetFindings not implemented")
+}
+func (UnimplementedScanServiceServer) DeleteScan(context.Context, *DeleteScanRequest) (*emptypb.Empty, error) {
+	return nil, status.Error(codes.Unimplemented, "method DeleteScan not implemented")
+}
+func (UnimplementedScanServiceServer) DeleteProjectScans(context.Context, *DeleteProjectScansRequest) (*DeleteProjectScansResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method DeleteProjectScans not implemented")
 }
 func (UnimplementedScanServiceServer) UpdateScan(context.Context, *UpdateScanRequest) (*Scan, error) {
 	return nil, status.Error(codes.Unimplemented, "method UpdateScan not implemented")
@@ -281,6 +313,42 @@ func _ScanService_GetFindings_Handler(srv interface{}, ctx context.Context, dec 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ScanService_DeleteScan_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteScanRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ScanServiceServer).DeleteScan(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ScanService_DeleteScan_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ScanServiceServer).DeleteScan(ctx, req.(*DeleteScanRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ScanService_DeleteProjectScans_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteProjectScansRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ScanServiceServer).DeleteProjectScans(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ScanService_DeleteProjectScans_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ScanServiceServer).DeleteProjectScans(ctx, req.(*DeleteProjectScansRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _ScanService_UpdateScan_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(UpdateScanRequest)
 	if err := dec(in); err != nil {
@@ -343,6 +411,14 @@ var ScanService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetFindings",
 			Handler:    _ScanService_GetFindings_Handler,
+		},
+		{
+			MethodName: "DeleteScan",
+			Handler:    _ScanService_DeleteScan_Handler,
+		},
+		{
+			MethodName: "DeleteProjectScans",
+			Handler:    _ScanService_DeleteProjectScans_Handler,
 		},
 		{
 			MethodName: "UpdateScan",

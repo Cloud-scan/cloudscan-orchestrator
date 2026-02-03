@@ -274,11 +274,11 @@ func (r *ScanRepository) List(ctx context.Context, filter interfaces.ScanFilter)
 	return scans, nil
 }
 
-// Delete deletes a scan (soft delete - updates status)
+// Delete deletes a scan (hard delete - permanently removes from database)
 func (r *ScanRepository) Delete(ctx context.Context, id uuid.UUID) error {
-	query := `UPDATE scans SET status = $2, updated_at = $3 WHERE id = $1`
+	query := `DELETE FROM scans WHERE id = $1`
 
-	result, err := r.db.ExecContext(ctx, query, id, domain.ScanStatusCancelled, time.Now())
+	result, err := r.db.ExecContext(ctx, query, id)
 	if err != nil {
 		return fmt.Errorf("failed to delete scan: %w", err)
 	}

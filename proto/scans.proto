@@ -15,6 +15,9 @@ service ScanService {
   rpc ListScans(ListScansRequest) returns (ListScansResponse);
   rpc CancelScan(CancelScanRequest) returns (google.protobuf.Empty);
   rpc GetFindings(GetFindingsRequest) returns (GetFindingsResponse);
+  rpc DeleteScan(DeleteScanRequest) returns (google.protobuf.Empty);
+  rpc DeleteProjectScans(DeleteProjectScansRequest)
+      returns (DeleteProjectScansResponse);
 
   // Runner calls
   rpc UpdateScan(UpdateScanRequest) returns (Scan);
@@ -163,4 +166,19 @@ message CreateFindingsRequest {
 // CreateFindingsResponse
 message CreateFindingsResponse {
   int32 created_count = 1;
+}
+
+// DeleteScanRequest
+message DeleteScanRequest {
+  string id = 1;
+}
+
+// DeleteProjectScansRequest
+message DeleteProjectScansRequest {
+  string project_id = 1;
+}
+
+// DeleteProjectScansResponse
+message DeleteProjectScansResponse {
+  int32 deleted_count = 1;
 }

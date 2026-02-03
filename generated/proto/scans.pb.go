@@ -1174,6 +1174,141 @@ func (x *CreateFindingsResponse) GetCreatedCount() int32 {
 	return 0
 }
 
+// DeleteScanRequest
+type DeleteScanRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DeleteScanRequest) Reset() {
+	*x = DeleteScanRequest{}
+	mi := &file_scans_proto_msgTypes[13]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeleteScanRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeleteScanRequest) ProtoMessage() {}
+
+func (x *DeleteScanRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_scans_proto_msgTypes[13]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeleteScanRequest.ProtoReflect.Descriptor instead.
+func (*DeleteScanRequest) Descriptor() ([]byte, []int) {
+	return file_scans_proto_rawDescGZIP(), []int{13}
+}
+
+func (x *DeleteScanRequest) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+// DeleteProjectScansRequest
+type DeleteProjectScansRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	ProjectId     string                 `protobuf:"bytes,1,opt,name=project_id,json=projectId,proto3" json:"project_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DeleteProjectScansRequest) Reset() {
+	*x = DeleteProjectScansRequest{}
+	mi := &file_scans_proto_msgTypes[14]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeleteProjectScansRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeleteProjectScansRequest) ProtoMessage() {}
+
+func (x *DeleteProjectScansRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_scans_proto_msgTypes[14]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeleteProjectScansRequest.ProtoReflect.Descriptor instead.
+func (*DeleteProjectScansRequest) Descriptor() ([]byte, []int) {
+	return file_scans_proto_rawDescGZIP(), []int{14}
+}
+
+func (x *DeleteProjectScansRequest) GetProjectId() string {
+	if x != nil {
+		return x.ProjectId
+	}
+	return ""
+}
+
+// DeleteProjectScansResponse
+type DeleteProjectScansResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	DeletedCount  int32                  `protobuf:"varint,1,opt,name=deleted_count,json=deletedCount,proto3" json:"deleted_count,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DeleteProjectScansResponse) Reset() {
+	*x = DeleteProjectScansResponse{}
+	mi := &file_scans_proto_msgTypes[15]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeleteProjectScansResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeleteProjectScansResponse) ProtoMessage() {}
+
+func (x *DeleteProjectScansResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_scans_proto_msgTypes[15]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeleteProjectScansResponse.ProtoReflect.Descriptor instead.
+func (*DeleteProjectScansResponse) Descriptor() ([]byte, []int) {
+	return file_scans_proto_rawDescGZIP(), []int{15}
+}
+
+func (x *DeleteProjectScansResponse) GetDeletedCount() int32 {
+	if x != nil {
+		return x.DeletedCount
+	}
+	return 0
+}
+
 var File_scans_proto protoreflect.FileDescriptor
 
 const file_scans_proto_rawDesc = "" +
@@ -1280,7 +1415,14 @@ const file_scans_proto_rawDesc = "" +
 	"\ascan_id\x18\x01 \x01(\tR\x06scanId\x12.\n" +
 	"\bfindings\x18\x02 \x03(\v2\x12.cloudscan.FindingR\bfindings\"=\n" +
 	"\x16CreateFindingsResponse\x12#\n" +
-	"\rcreated_count\x18\x01 \x01(\x05R\fcreatedCount*l\n" +
+	"\rcreated_count\x18\x01 \x01(\x05R\fcreatedCount\"#\n" +
+	"\x11DeleteScanRequest\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\":\n" +
+	"\x19DeleteProjectScansRequest\x12\x1d\n" +
+	"\n" +
+	"project_id\x18\x01 \x01(\tR\tprojectId\"A\n" +
+	"\x1aDeleteProjectScansResponse\x12#\n" +
+	"\rdeleted_count\x18\x01 \x01(\x05R\fdeletedCount*l\n" +
 	"\n" +
 	"ScanStatus\x12\x1b\n" +
 	"\x17SCAN_STATUS_UNSPECIFIED\x10\x00\x12\n" +
@@ -1304,7 +1446,7 @@ const file_scans_proto_rawDesc = "" +
 	"\n" +
 	"\x06MEDIUM\x10\x03\x12\a\n" +
 	"\x03LOW\x10\x04\x12\b\n" +
-	"\x04INFO\x10\x052\xfd\x03\n" +
+	"\x04INFO\x10\x052\xa4\x05\n" +
 	"\vScanService\x12I\n" +
 	"\n" +
 	"CreateScan\x12\x1c.cloudscan.CreateScanRequest\x1a\x1d.cloudscan.CreateScanResponse\x125\n" +
@@ -1312,7 +1454,10 @@ const file_scans_proto_rawDesc = "" +
 	"\tListScans\x12\x1b.cloudscan.ListScansRequest\x1a\x1c.cloudscan.ListScansResponse\x12B\n" +
 	"\n" +
 	"CancelScan\x12\x1c.cloudscan.CancelScanRequest\x1a\x16.google.protobuf.Empty\x12L\n" +
-	"\vGetFindings\x12\x1d.cloudscan.GetFindingsRequest\x1a\x1e.cloudscan.GetFindingsResponse\x12;\n" +
+	"\vGetFindings\x12\x1d.cloudscan.GetFindingsRequest\x1a\x1e.cloudscan.GetFindingsResponse\x12B\n" +
+	"\n" +
+	"DeleteScan\x12\x1c.cloudscan.DeleteScanRequest\x1a\x16.google.protobuf.Empty\x12a\n" +
+	"\x12DeleteProjectScans\x12$.cloudscan.DeleteProjectScansRequest\x1a%.cloudscan.DeleteProjectScansResponse\x12;\n" +
 	"\n" +
 	"UpdateScan\x12\x1c.cloudscan.UpdateScanRequest\x1a\x0f.cloudscan.Scan\x12U\n" +
 	"\x0eCreateFindings\x12 .cloudscan.CreateFindingsRequest\x1a!.cloudscan.CreateFindingsResponseB>Z<github.com/cloud-scan/cloudscan-orchestrator/generated/protob\x06proto3"
@@ -1330,39 +1475,42 @@ func file_scans_proto_rawDescGZIP() []byte {
 }
 
 var file_scans_proto_enumTypes = make([]protoimpl.EnumInfo, 3)
-var file_scans_proto_msgTypes = make([]protoimpl.MessageInfo, 15)
+var file_scans_proto_msgTypes = make([]protoimpl.MessageInfo, 18)
 var file_scans_proto_goTypes = []any{
-	(ScanStatus)(0),                // 0: cloudscan.ScanStatus
-	(ScanType)(0),                  // 1: cloudscan.ScanType
-	(Severity)(0),                  // 2: cloudscan.Severity
-	(*Scan)(nil),                   // 3: cloudscan.Scan
-	(*Finding)(nil),                // 4: cloudscan.Finding
-	(*CreateScanRequest)(nil),      // 5: cloudscan.CreateScanRequest
-	(*CreateScanResponse)(nil),     // 6: cloudscan.CreateScanResponse
-	(*GetScanRequest)(nil),         // 7: cloudscan.GetScanRequest
-	(*ListScansRequest)(nil),       // 8: cloudscan.ListScansRequest
-	(*ListScansResponse)(nil),      // 9: cloudscan.ListScansResponse
-	(*CancelScanRequest)(nil),      // 10: cloudscan.CancelScanRequest
-	(*GetFindingsRequest)(nil),     // 11: cloudscan.GetFindingsRequest
-	(*GetFindingsResponse)(nil),    // 12: cloudscan.GetFindingsResponse
-	(*UpdateScanRequest)(nil),      // 13: cloudscan.UpdateScanRequest
-	(*CreateFindingsRequest)(nil),  // 14: cloudscan.CreateFindingsRequest
-	(*CreateFindingsResponse)(nil), // 15: cloudscan.CreateFindingsResponse
-	nil,                            // 16: cloudscan.Scan.FindingsBySeverityEntry
-	nil,                            // 17: cloudscan.UpdateScanRequest.FindingsBySeverityEntry
-	(*timestamppb.Timestamp)(nil),  // 18: google.protobuf.Timestamp
-	(*emptypb.Empty)(nil),          // 19: google.protobuf.Empty
+	(ScanStatus)(0),                    // 0: cloudscan.ScanStatus
+	(ScanType)(0),                      // 1: cloudscan.ScanType
+	(Severity)(0),                      // 2: cloudscan.Severity
+	(*Scan)(nil),                       // 3: cloudscan.Scan
+	(*Finding)(nil),                    // 4: cloudscan.Finding
+	(*CreateScanRequest)(nil),          // 5: cloudscan.CreateScanRequest
+	(*CreateScanResponse)(nil),         // 6: cloudscan.CreateScanResponse
+	(*GetScanRequest)(nil),             // 7: cloudscan.GetScanRequest
+	(*ListScansRequest)(nil),           // 8: cloudscan.ListScansRequest
+	(*ListScansResponse)(nil),          // 9: cloudscan.ListScansResponse
+	(*CancelScanRequest)(nil),          // 10: cloudscan.CancelScanRequest
+	(*GetFindingsRequest)(nil),         // 11: cloudscan.GetFindingsRequest
+	(*GetFindingsResponse)(nil),        // 12: cloudscan.GetFindingsResponse
+	(*UpdateScanRequest)(nil),          // 13: cloudscan.UpdateScanRequest
+	(*CreateFindingsRequest)(nil),      // 14: cloudscan.CreateFindingsRequest
+	(*CreateFindingsResponse)(nil),     // 15: cloudscan.CreateFindingsResponse
+	(*DeleteScanRequest)(nil),          // 16: cloudscan.DeleteScanRequest
+	(*DeleteProjectScansRequest)(nil),  // 17: cloudscan.DeleteProjectScansRequest
+	(*DeleteProjectScansResponse)(nil), // 18: cloudscan.DeleteProjectScansResponse
+	nil,                                // 19: cloudscan.Scan.FindingsBySeverityEntry
+	nil,                                // 20: cloudscan.UpdateScanRequest.FindingsBySeverityEntry
+	(*timestamppb.Timestamp)(nil),      // 21: google.protobuf.Timestamp
+	(*emptypb.Empty)(nil),              // 22: google.protobuf.Empty
 }
 var file_scans_proto_depIdxs = []int32{
 	0,  // 0: cloudscan.Scan.status:type_name -> cloudscan.ScanStatus
 	1,  // 1: cloudscan.Scan.scan_types:type_name -> cloudscan.ScanType
-	18, // 2: cloudscan.Scan.created_at:type_name -> google.protobuf.Timestamp
-	18, // 3: cloudscan.Scan.updated_at:type_name -> google.protobuf.Timestamp
-	18, // 4: cloudscan.Scan.completed_at:type_name -> google.protobuf.Timestamp
-	16, // 5: cloudscan.Scan.findings_by_severity:type_name -> cloudscan.Scan.FindingsBySeverityEntry
+	21, // 2: cloudscan.Scan.created_at:type_name -> google.protobuf.Timestamp
+	21, // 3: cloudscan.Scan.updated_at:type_name -> google.protobuf.Timestamp
+	21, // 4: cloudscan.Scan.completed_at:type_name -> google.protobuf.Timestamp
+	19, // 5: cloudscan.Scan.findings_by_severity:type_name -> cloudscan.Scan.FindingsBySeverityEntry
 	1,  // 6: cloudscan.Finding.scan_type:type_name -> cloudscan.ScanType
 	2,  // 7: cloudscan.Finding.severity:type_name -> cloudscan.Severity
-	18, // 8: cloudscan.Finding.created_at:type_name -> google.protobuf.Timestamp
+	21, // 8: cloudscan.Finding.created_at:type_name -> google.protobuf.Timestamp
 	1,  // 9: cloudscan.CreateScanRequest.scan_types:type_name -> cloudscan.ScanType
 	3,  // 10: cloudscan.CreateScanResponse.scan:type_name -> cloudscan.Scan
 	0,  // 11: cloudscan.ListScansRequest.status:type_name -> cloudscan.ScanStatus
@@ -1371,24 +1519,28 @@ var file_scans_proto_depIdxs = []int32{
 	2,  // 14: cloudscan.GetFindingsRequest.severity:type_name -> cloudscan.Severity
 	4,  // 15: cloudscan.GetFindingsResponse.findings:type_name -> cloudscan.Finding
 	0,  // 16: cloudscan.UpdateScanRequest.status:type_name -> cloudscan.ScanStatus
-	17, // 17: cloudscan.UpdateScanRequest.findings_by_severity:type_name -> cloudscan.UpdateScanRequest.FindingsBySeverityEntry
+	20, // 17: cloudscan.UpdateScanRequest.findings_by_severity:type_name -> cloudscan.UpdateScanRequest.FindingsBySeverityEntry
 	4,  // 18: cloudscan.CreateFindingsRequest.findings:type_name -> cloudscan.Finding
 	5,  // 19: cloudscan.ScanService.CreateScan:input_type -> cloudscan.CreateScanRequest
 	7,  // 20: cloudscan.ScanService.GetScan:input_type -> cloudscan.GetScanRequest
 	8,  // 21: cloudscan.ScanService.ListScans:input_type -> cloudscan.ListScansRequest
 	10, // 22: cloudscan.ScanService.CancelScan:input_type -> cloudscan.CancelScanRequest
 	11, // 23: cloudscan.ScanService.GetFindings:input_type -> cloudscan.GetFindingsRequest
-	13, // 24: cloudscan.ScanService.UpdateScan:input_type -> cloudscan.UpdateScanRequest
-	14, // 25: cloudscan.ScanService.CreateFindings:input_type -> cloudscan.CreateFindingsRequest
-	6,  // 26: cloudscan.ScanService.CreateScan:output_type -> cloudscan.CreateScanResponse
-	3,  // 27: cloudscan.ScanService.GetScan:output_type -> cloudscan.Scan
-	9,  // 28: cloudscan.ScanService.ListScans:output_type -> cloudscan.ListScansResponse
-	19, // 29: cloudscan.ScanService.CancelScan:output_type -> google.protobuf.Empty
-	12, // 30: cloudscan.ScanService.GetFindings:output_type -> cloudscan.GetFindingsResponse
-	3,  // 31: cloudscan.ScanService.UpdateScan:output_type -> cloudscan.Scan
-	15, // 32: cloudscan.ScanService.CreateFindings:output_type -> cloudscan.CreateFindingsResponse
-	26, // [26:33] is the sub-list for method output_type
-	19, // [19:26] is the sub-list for method input_type
+	16, // 24: cloudscan.ScanService.DeleteScan:input_type -> cloudscan.DeleteScanRequest
+	17, // 25: cloudscan.ScanService.DeleteProjectScans:input_type -> cloudscan.DeleteProjectScansRequest
+	13, // 26: cloudscan.ScanService.UpdateScan:input_type -> cloudscan.UpdateScanRequest
+	14, // 27: cloudscan.ScanService.CreateFindings:input_type -> cloudscan.CreateFindingsRequest
+	6,  // 28: cloudscan.ScanService.CreateScan:output_type -> cloudscan.CreateScanResponse
+	3,  // 29: cloudscan.ScanService.GetScan:output_type -> cloudscan.Scan
+	9,  // 30: cloudscan.ScanService.ListScans:output_type -> cloudscan.ListScansResponse
+	22, // 31: cloudscan.ScanService.CancelScan:output_type -> google.protobuf.Empty
+	12, // 32: cloudscan.ScanService.GetFindings:output_type -> cloudscan.GetFindingsResponse
+	22, // 33: cloudscan.ScanService.DeleteScan:output_type -> google.protobuf.Empty
+	18, // 34: cloudscan.ScanService.DeleteProjectScans:output_type -> cloudscan.DeleteProjectScansResponse
+	3,  // 35: cloudscan.ScanService.UpdateScan:output_type -> cloudscan.Scan
+	15, // 36: cloudscan.ScanService.CreateFindings:output_type -> cloudscan.CreateFindingsResponse
+	28, // [28:37] is the sub-list for method output_type
+	19, // [19:28] is the sub-list for method input_type
 	19, // [19:19] is the sub-list for extension type_name
 	19, // [19:19] is the sub-list for extension extendee
 	0,  // [0:19] is the sub-list for field type_name
@@ -1405,7 +1557,7 @@ func file_scans_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_scans_proto_rawDesc), len(file_scans_proto_rawDesc)),
 			NumEnums:      3,
-			NumMessages:   15,
+			NumMessages:   18,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
