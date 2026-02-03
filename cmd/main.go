@@ -151,20 +151,29 @@ func main() {
 		cfg.Kubernetes.Namespace, // Default namespace for jobs
 	)
 
-	cleaner := workers.NewCleaner(
-		scanRepo,
-		findingRepo,
-		storageClient,
-		jobDispatcher,
-		90,                       // 90 days retention
-		"00:00",                  // Cleanup at midnight
-		cfg.Kubernetes.Namespace, // Default namespace for jobs
-	)
+	// Initialize cleaner (may be nil if disabled)
+	var cleaner *workers.Cleaner
+	if cfg.Workers.EnableCleaner {
+		cleaner = workers.NewCleaner(
+			scanRepo,
+			findingRepo,
+			storageClient,
+			jobDispatcher,
+			90,                       // 90 days retention
+			"00:00",                  // Cleanup at midnight
+			cfg.Kubernetes.Namespace, // Default namespace for jobs
+		)
+		log.Info("Cleaner worker enabled")
+	} else {
+		log.Info("Cleaner worker disabled (set ENABLE_CLEANER=true to enable)")
+	}
 
 	// Start background workers
 	go dispatcher.Start(ctx)
 	go sweeper.Start(ctx)
-	go cleaner.Start(ctx)
+	if cleaner != nil {
+		go cleaner.Start(ctx)
+	}
 
 	// Start HTTP server
 	go func() {
@@ -195,7 +204,9 @@ func main() {
 	// Stop workers
 	dispatcher.Stop()
 	sweeper.Stop()
-	cleaner.Stop()
+	if cleaner != nil {
+		cleaner.Stop()
+	}
 
 	// Stop HTTP server
 	if err := httpSrv.Shutdown(shutdownCtx); err != nil {
