@@ -114,24 +114,39 @@ func (c *Cleaner) cleanup(ctx context.Context) {
 	cutoffDate := time.Now().AddDate(0, 0, -c.retentionDays)
 	c.logger.WithField("cutoff_date", cutoffDate).Info("Cleaning scans older than cutoff date")
 
-	// Query for old scans
-	filter := interfaces.ScanFilter{
-		CreatedBefore: &cutoffDate,
+	// Query for old scans in FINAL states only (exclude QUEUED and RUNNING)
+	// This prevents deleting active scans that are older than retention period
+	finalStatuses := []domain.ScanStatus{
+		domain.ScanStatusCompleted,
+		domain.ScanStatusFailed,
+		domain.ScanStatusCancelled,
 	}
 
-	scans, err := c.scanRepo.List(ctx, filter)
-	if err != nil {
-		c.logger.WithError(err).Error("Failed to list old scans")
-		return
+	var allScansToClean []*domain.Scan
+
+	// Query for each final status
+	for _, status := range finalStatuses {
+		filter := interfaces.ScanFilter{
+			CreatedBefore: &cutoffDate,
+			Status:        &status,
+		}
+
+		scans, err := c.scanRepo.List(ctx, filter)
+		if err != nil {
+			c.logger.WithError(err).WithField("status", status).Error("Failed to list old scans")
+			continue
+		}
+
+		allScansToClean = append(allScansToClean, scans...)
 	}
 
-	c.logger.WithField("count", len(scans)).Info("Found old scans to clean up")
+	c.logger.WithField("count", len(allScansToClean)).Info("Found old scans in final states to clean up")
 
 	successCount := 0
 	failureCount := 0
 
 	// Clean up each scan
-	for _, scan := range scans {
+	for _, scan := range allScansToClean {
 		if err := c.cleanupScan(ctx, scan); err != nil {
 			c.logger.WithError(err).WithField("scan_id", scan.ID.String()).Error("Failed to cleanup scan")
 			failureCount++
@@ -143,7 +158,7 @@ func (c *Cleaner) cleanup(ctx context.Context) {
 	c.logger.WithFields(log.Fields{
 		"success_count": successCount,
 		"failure_count": failureCount,
-		"total_count":   len(scans),
+		"total_count":   len(allScansToClean),
 	}).Info("Cleanup cycle completed")
 }
 
