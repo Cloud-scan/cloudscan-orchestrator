@@ -15,6 +15,7 @@ type Config struct {
 	StorageService StorageServiceConfig
 	Kubernetes     KubernetesConfig
 	Observability  ObservabilityConfig
+	Workers        WorkersConfig
 }
 
 // ServerConfig holds HTTP/gRPC server configuration
@@ -89,6 +90,11 @@ type ObservabilityConfig struct {
 	LogFormat         string // json or text
 }
 
+// WorkersConfig holds background workers configuration
+type WorkersConfig struct {
+	EnableCleaner bool // Enable cleanup worker (should be disabled, cleanup handled by API Gateway)
+}
+
 // LoadConfig loads configuration from environment variables
 func LoadConfig() (*Config, error) {
 	cfg := &Config{
@@ -148,6 +154,9 @@ func LoadConfig() (*Config, error) {
 			JaegerEnabled:     getEnvBool("JAEGER_ENABLED", false),
 			JaegerURL:         getEnv("JAEGER_URL", ""),
 			LogFormat:         getEnv("LOG_FORMAT", "json"),
+		},
+		Workers: WorkersConfig{
+			EnableCleaner: getEnvBool("ENABLE_CLEANER", false), // Default false - cleanup handled by API Gateway
 		},
 	}
 
